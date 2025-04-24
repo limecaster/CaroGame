@@ -97,8 +97,9 @@ GameObject:
   m_Component:
   - component: {fileID: 9126420705902453099}
   - component: {fileID: 2187929375214834351}
-  - component: {fileID: 8200472409661921246}
+  - component: {fileID: 3363447076957631594}
   - component: {fileID: 2220486329076084242}
+  - component: {fileID: 5091121470011490951}
   m_Layer: 0
   m_Name: NetworkCell
   m_TagString: Untagged
@@ -178,7 +179,7 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!114 &8200472409661921246
+--- !u!114 &3363447076957631594
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -187,14 +188,15 @@ MonoBehaviour:
   m_GameObject: {fileID: 5579029288823119357}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 225d57a177d3a2c4a918dfbd3e468896, type: 3}
+  m_Script: {fileID: 11500000, guid: 76f616af01713a14782c1a202407701c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   _spriteRenderer: {fileID: 2187929375214834351}
   _baseColor: {r: 1, g: 1, b: 1, a: 1}
-  _offsetColor: {r: 0.9191374, g: 0.9191374, b: 0.9191374, a: 1}
+  _offsetColor: {r: 0.91764706, g: 0.91764706, b: 0.91764706, a: 1}
   _highlight: {fileID: 2815333915372049628}
   _symbol: {fileID: 3110036265678395929}
+  _fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
 --- !u!61 &2220486329076084242
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -241,6 +243,28 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 1, y: 1}
   m_EdgeRadius: 0
+--- !u!114 &5091121470011490951
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5579029288823119357}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa584fbee541324448dd18d8409c7a41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ObservedComponentsFoldoutOpen: 1
+  Group: 0
+  prefixField: -1
+  Synchronization: 3
+  OwnershipTransfer: 0
+  observableSearch: 2
+  ObservedComponents: []
+  sceneViewId: 0
+  InstantiationId: 0
+  isRuntimeInstantiated: 0
 --- !u!1 &8582191267345316070
 GameObject:
   m_ObjectHideFlags: 0

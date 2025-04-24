@@ -1,9 +1,10 @@
+using Photon.Pun;
 using UnityEngine;
 
 public class NetworkGridManager : MonoBehaviour
 {
-    [SerializeField] private int _width = 10;  // Reduced from 15 to 10
-    [SerializeField] private int _height = 10; // Reduced from 15 to 10
+    [SerializeField] private int _width = 15;  // Reduced from 15 to 10
+    [SerializeField] private int _height = 15; // Reduced from 15 to 10
     [SerializeField] private NetworkCell _cellPrefab;
     [SerializeField] private Transform _cam;
     
@@ -36,6 +37,19 @@ public class NetworkGridManager : MonoBehaviour
     
     private void HandleCameraMovement()
     {
+        if (_cam == null)
+        {
+            Debug.LogError("Camera reference is missing.");
+            return;
+        }
+
+        if (!_cam.GetComponent<PhotonView>().IsMine)
+        {
+            // Allow camera movement only for the local player
+            return;
+        }
+
+
         // Get input for camera movement
         float horizontalInput = Input.GetAxis("Horizontal");
         float verticalInput = Input.GetAxis("Vertical");
@@ -83,6 +97,11 @@ public class NetworkGridManager : MonoBehaviour
 
     void GenerateGrid()
     {
+        if (!PhotonNetwork.IsMasterClient)
+        {
+            Debug.Log("Not the master client, skipping grid generation.");
+            return;
+        }
         if (NetworkGameManager.Instance == null)
         {
             Debug.LogError("NetworkGameManager.Instance is still null after attempting to create it. Check script execution order.");
@@ -95,7 +114,8 @@ public class NetworkGridManager : MonoBehaviour
         {
             for (int y = 0; y < _height; y++)
             {
-                var cell = Instantiate(_cellPrefab, new Vector3(x, y), Quaternion.identity);
+                var cell = PhotonNetwork.Instantiate("NetworkCell", new Vector3(x, y), Quaternion.identity)
+                    .GetComponent<NetworkCell>();
                 cell.name = $"NetworkCell ({x}, {y})";
 
                 bool isOffset = (x + y) % 2 != 0;

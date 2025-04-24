@@ -16,14 +16,9 @@ public class AIBot : MonoBehaviour
     private const int OPEN_THREE = 1000;         // Strong threat
     private const int THREE = 100;               // Potential threat
     private const int OPEN_TWO = 50;             // Early development
-    
-    // New complex pattern constants
-    private const int SPLIT_FOUR = 900;         // e.g., "XX_XX" pattern
-    private const int KNIGHT_PATTERN = 300;     // Special jumping patterns
 
     // Add new offensive pattern constants
     private const int DOUBLE_THREAT = 8000;  // Creating two threats at once (fork)
-    private const int DEVELOPING_MOVE = 400; // Moves that develop our position
 
     private Dictionary<string, int> _transpositionTable = new Dictionary<string, int>();
     private bool _useTimeLimit = true;

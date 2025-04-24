@@ -1,7 +1,10 @@
+using Photon.Pun;
 using TMPro;
 using UnityEngine;
+using Photon.Realtime;
 
-public class NetworkCell : MonoBehaviour
+
+public class NetworkCell : MonoBehaviour, IPunObservable
 {
     [SerializeField] private SpriteRenderer _spriteRenderer;
     [SerializeField] private Color _baseColor, _offsetColor;
@@ -88,7 +91,7 @@ public class NetworkCell : MonoBehaviour
     void OnMouseDown()
     {
         // Only call MakeMove if it's the player's turn
-        if (NetworkGameManager.Instance != null && NetworkGameManager.Instance.GetCurrentPlayer() == "X")
+        if (NetworkGameManager.Instance != null)
         {
             MakeMove();
         }
@@ -101,69 +104,78 @@ public class NetworkCell : MonoBehaviour
 
     public void MakeMove()
     {
-        // Double-check that it's not occupied AND it's the current player's turn (or AI is calling this)
+        // Double-check that it's not occupied AND it's the current player's turn
         if (!_isOccupied && NetworkGameManager.Instance != null)
         {
-            // For human player, verify it's their turn before proceeding
+            // For PvP, get the current player from the game manager
             string currentPlayer = NetworkGameManager.Instance.GetCurrentPlayer();
-            
-            // If this is a human click (not AI), verify it's the human's turn
-            if (currentPlayer == "O" && !IsAIMove())
+            PlayerCore thisPlayer = null;
+            PlayerCore[] pc = FindObjectsOfType<PlayerCore>();
+            foreach (PlayerCore p in pc)
+            {
+                if (p.gameObject.GetComponent<PhotonView>().IsMine)
+                {
+                    thisPlayer = p;
+                    break;
+                }
+            }
+
+            // Check if the current player is the same as this player's turn
+            if (thisPlayer.turnID != currentPlayer)
             {
                 Debug.Log("Not your turn!");
                 return;
             }
-            
-            _isOccupied = true;
-            _currentPlayer = currentPlayer;
-            
-            // Ensure the symbol is visible and properly configured
-            if (_symbol != null)
-            {
-                // Activate the symbol object first
-                _symbol.gameObject.SetActive(true);
+
+            // Call the RPC to set the cell
+            thisPlayer.photonView.RPC("SetCell", RpcTarget.AllBuffered, currentPlayer, true);
+
+            //// Ensure the symbol is visible and properly configured
+            //if (_symbol != null)
+            //{
+            //    // Activate the symbol object first
+            //    _symbol.gameObject.SetActive(true);
                 
-                // Use a much larger font size to ensure visibility
-                _symbol.fontSize = 90f; // Increased significantly
+            //    // Use a much larger font size to ensure visibility
+            //    _symbol.fontSize = 90f; // Increased significantly
                 
-                // Set the text and color
-                _symbol.text = _currentPlayer;
-                _symbol.color = _currentPlayer == "X" ? Color.red : Color.blue;
+            //    // Set the text and color
+            //    _symbol.text = _currentPlayer;
+            //    _symbol.color = _currentPlayer == "X" ? Color.red : Color.blue;
                 
-                // Ensure the symbol is fully visible
-                _symbol.alpha = 1f;
+            //    // Ensure the symbol is fully visible
+            //    _symbol.alpha = 1f;
                 
-                // Position text in center of cell at proper depth
-                _symbol.transform.localPosition = new Vector3(0, 0, -0.1f);
+            //    // Position text in center of cell at proper depth
+            //    _symbol.transform.localPosition = new Vector3(0, 0, -0.1f);
                 
-                // Force update the mesh with complete rebuild
-                _symbol.ForceMeshUpdate(true, true);
+            //    // Force update the mesh with complete rebuild
+            //    _symbol.ForceMeshUpdate(true, true);
                 
-                // Debug information
-                Debug.Log($"Set cell text to '{_currentPlayer}' with size {_symbol.fontSize}");
-            }
+            //    // Debug information
+            //    Debug.Log($"Set cell text to '{_currentPlayer}' with size {_symbol.fontSize}");
+            //}
 
             NetworkGameManager.Instance.ProcessTurn(this);
         }
     }
 
-    // Helper method to determine if this move is being made by the AI
-    private bool IsAIMove()
+    [PunRPC]
+    public void SetCell(string playerID, bool isOccupied)
     {
-        // Get the call stack to check if AIBot.MakeMove is calling this function
-        System.Diagnostics.StackTrace stackTrace = new System.Diagnostics.StackTrace();
-        
-        // Check if any frame in the call stack is from the AIBot class
-        for (int i = 0; i < stackTrace.FrameCount; i++)
+        _isOccupied = isOccupied;
+        _currentPlayer = playerID;
+        if (_symbol != null)
         {
-            var method = stackTrace.GetFrame(i).GetMethod();
-            if (method.DeclaringType != null && method.DeclaringType.Name == "AIBot")
-            {
-                return true;
-            }
+            _symbol.text = _currentPlayer;
+            _symbol.color = _currentPlayer == "X" ? Color.red : Color.blue;
+            _symbol.gameObject.SetActive(_isOccupied);
+            _symbol.alpha = 1f; // Ensure it's fully visible
         }
-        
-        return false;
+        else
+        {
+            Debug.LogError("TextMeshPro component not assigned on Cell!");
+        }
     }
 
     public string GetSymbol()
@@ -171,53 +183,35 @@ public class NetworkCell : MonoBehaviour
         return _isOccupied ? _currentPlayer : "";
     }
 
-    public void MakeTemporaryMove(string player)
+    public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
     {
-        _isOccupied = true;
-        _currentPlayer = player;
-        
-        if (_symbol != null)
+        if (stream.IsWriting)
         {
-            // Activate and make visible
-            _symbol.gameObject.SetActive(true);
-            _symbol.alpha = 1f;
-            
-            // Set large text size to ensure visibility
-            _symbol.fontSize = 30f;
-            
-            // Set text and color
-            _symbol.text = player;
-            _symbol.color = player == "X" ? Color.red : Color.blue;
-            
-            // Ensure text is centered at proper depth
-            _symbol.transform.localPosition = new Vector3(0, 0, -0.1f);
-            
-            // Force complete update
-            _symbol.ForceMeshUpdate(true, true);
+            // We own this player: send the others our data
+            object[] data = new object[3];
+            data[0] = _isOccupied;
+            data[1] = _currentPlayer;
+            data[2] = _isOffset;
+            stream.SendNext(data);          
         }
-    }
-
-    public void UndoTemporaryMove()
-    {
-        _isOccupied = false;
-        _currentPlayer = "";
-        
-        if (_symbol != null)
-        {
-            _symbol.text = "";
-            _symbol.gameObject.SetActive(false);
+        else { 
+            object[] receivedData = (object[])stream.ReceiveNext();
+            _isOccupied = (bool)receivedData[0];
+            _currentPlayer = (string)receivedData[1];
+            _isOffset = (bool)receivedData[2];
+            // Update the cell's visual state based on received data
+            if (_symbol != null)
+            {
+                _symbol.text = _currentPlayer;
+                _symbol.color = _currentPlayer == "X" ? Color.red : Color.blue;
+                _symbol.gameObject.SetActive(_isOccupied);
+                _symbol.alpha = 1f; // Ensure it's fully visible
+            }
+            else
+            {
+                Debug.LogError("TextMeshPro component not assigned on Cell!");
+            }
         }
-    }
-
-    public void ResetCell()
-    {
-        _isOccupied = false;
-        _currentPlayer = "";
-        _symbol.text = "";
-        _symbol.gameObject.SetActive(false);
-        _highlight.SetActive(false);
-        
-        // Reset color to original
-        _spriteRenderer.color = _isOffset ? _offsetColor : _baseColor;
+        throw new System.NotImplementedException();
     }
 }

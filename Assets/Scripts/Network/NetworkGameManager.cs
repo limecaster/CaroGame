@@ -3,8 +3,9 @@ using System.Collections;
 using UnityEngine.UI;
 using TMPro;
 using System;
+using Photon.Pun;
 
-public class NetworkGameManager : MonoBehaviour
+public class NetworkGameManager : MonoBehaviourPunCallbacks, IPunObservable
 {
     public static NetworkGameManager Instance;
 
@@ -12,8 +13,6 @@ public class NetworkGameManager : MonoBehaviour
     private int _gridSize = 15; // Changed from 15 to 10
     private NetworkCell[,] _grid;
     private bool _gameOver = false;
-
-    private AIBot _aiBot;
 
     [SerializeField] private GameObject _gameOverPanel;
     [SerializeField] private TextMeshProUGUI _gameOverText;
@@ -32,9 +31,6 @@ public class NetworkGameManager : MonoBehaviour
         if (Instance == null)
         {
             Instance = this;
-            DontDestroyOnLoad(gameObject);
-            _aiBot = gameObject.AddComponent<AIBot>();
-            
             // Create UI elements if they don't exist
             InitializeUI();
         }
@@ -46,6 +42,10 @@ public class NetworkGameManager : MonoBehaviour
 
     private void InitializeUI()
     {
+        if (!PhotonNetwork.IsMasterClient)
+        {
+            return;
+        }
         if (_gameOverPanel == null)
         {
             // Find or create canvas
@@ -123,9 +123,7 @@ public class NetworkGameManager : MonoBehaviour
             buttonText.text = "Restart Game";
             buttonText.alignment = TextAlignmentOptions.Center;
             buttonText.fontSize = 18;
-            
-            // Add button listener
-            _restartButton.onClick.AddListener(RestartGame);
+           
             
             _gameOverPanel.SetActive(false);
         }
@@ -175,6 +173,7 @@ public class NetworkGameManager : MonoBehaviour
         return _currentPlayer;
     }
 
+    [PunRPC]
     public void ProcessTurn(NetworkCell cell)
     {
         if (_gameOver) return;
@@ -216,26 +215,6 @@ public class NetworkGameManager : MonoBehaviour
         OnGameOver?.Invoke(message);
     }
 
-    public void RestartGame()
-    {
-        // Clear the board
-        foreach (var cell in _grid)
-        {
-            cell.ResetCell();
-        }
-        
-        // Reset game state
-        _gameOver = false;
-        _currentPlayer = "X";
-        
-        // Hide the game over panel
-        if (_gameOverPanel != null)
-        {
-            _gameOverPanel.SetActive(false);
-        }
-        
-        Debug.Log("Game restarted");
-    }
 
     private bool CheckWin(NetworkCell cell)
     {
@@ -308,5 +287,19 @@ public class NetworkGameManager : MonoBehaviour
             }
         }
         return new Vector2Int(-1, -1);
+    }
+
+    public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+    {
+        if (stream.IsWriting)
+        {
+            // We own this player: send the others our data
+            stream.SendNext(_currentPlayer);
+        }
+        else
+        {
+            // Network player, receive data
+            _currentPlayer = (string)stream.ReceiveNext();
+        }
     }
 }

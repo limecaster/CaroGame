@@ -17,7 +17,6 @@ public class AIBot : MonoBehaviour
     private const int THREE = 100;               // Potential threat
     private const int OPEN_TWO = 50;             // Early development
 
-    // Add new offensive pattern constants
     private const int DOUBLE_THREAT = 8000;  // Creating two threats at once (fork)
 
     private Dictionary<string, int> _transpositionTable = new Dictionary<string, int>();

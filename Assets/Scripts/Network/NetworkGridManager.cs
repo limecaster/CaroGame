@@ -6,7 +6,7 @@ public class NetworkGridManager : MonoBehaviour
     [SerializeField] private int _width = 15;  // Reduced from 15 to 10
     [SerializeField] private int _height = 15; // Reduced from 15 to 10
     [SerializeField] private NetworkCell _cellPrefab;
-    [SerializeField] private Transform _cam;
+    //[SerializeField] private Transform _cam;
     
     // Camera movement settings
     [SerializeField] private float _cameraSpeed = 5f;
@@ -20,62 +20,61 @@ public class NetworkGridManager : MonoBehaviour
     {
         EnsureGameManagerExists();
         GenerateGrid();
-        InitializeCamera();
+        //InitializeCamera();
     }
     
     void Update()
     {
-        HandleCameraMovement();
+        //HandleCameraMovement();
     }
 
-    private void InitializeCamera()
-    {
-        // Set initial camera position to center of board
-        _cameraTargetPosition = new Vector3(_width / 2f - 0.5f, _height / 2f - 0.5f, -10);
-        _cam.transform.position = _cameraTargetPosition;
-    }
+    //private void InitializeCamera()
+    //{
+    //    // Set initial camera position to center of board
+    //    _cameraTargetPosition = new Vector3(_width / 2f - 0.5f, _height / 2f - 0.5f, -10);
+    //    _cam.transform.position = _cameraTargetPosition;
+    //}
     
-    private void HandleCameraMovement()
-    {
-        if (_cam == null)
-        {
-            Debug.LogError("Camera reference is missing.");
-            return;
-        }
+    //private void HandleCameraMovement()
+    //{
+    //    // Find all cameras in the scene
+    //    Camera[] cameras = FindObjectsOfType<Camera>();
+    //    foreach (Camera cam in cameras) {
+    //        if (cam.GetComponent<PhotonView>() != null && cam.GetComponent<PhotonView>().IsMine)
+    //        {
+    //            _cam = cam.transform;
+    //            Debug.Log("Found camera controlled by local player: " + cam.name);
+    //            break;
+    //        }
+    //    }
 
-        if (!_cam.GetComponent<PhotonView>().IsMine)
-        {
-            // Allow camera movement only for the local player
-            return;
-        }
 
-
-        // Get input for camera movement
-        float horizontalInput = Input.GetAxis("Horizontal");
-        float verticalInput = Input.GetAxis("Vertical");
+    //    // Get input for camera movement
+    //    float horizontalInput = Input.GetAxis("Horizontal");
+    //    float verticalInput = Input.GetAxis("Vertical");
         
-        // Apply movement to camera target position
-        if (horizontalInput != 0 || verticalInput != 0)
-        {
-            Vector3 movement = new Vector3(horizontalInput, verticalInput, 0) * _cameraSpeed * Time.deltaTime;
-            _cameraTargetPosition += movement;
+    //    // Apply movement to camera target position
+    //    if (horizontalInput != 0 || verticalInput != 0)
+    //    {
+    //        Vector3 movement = new Vector3(horizontalInput, verticalInput, 0) * _cameraSpeed * Time.deltaTime;
+    //        _cameraTargetPosition += movement;
             
-            // Clamp to grid boundaries with margin
-            _cameraTargetPosition.x = Mathf.Clamp(_cameraTargetPosition.x, _cameraBoundaryMargin, _width - _cameraBoundaryMargin - 1);
-            _cameraTargetPosition.y = Mathf.Clamp(_cameraTargetPosition.y, _cameraBoundaryMargin, _height - _cameraBoundaryMargin - 1);
+    //        // Clamp to grid boundaries with margin
+    //        _cameraTargetPosition.x = Mathf.Clamp(_cameraTargetPosition.x, _cameraBoundaryMargin, _width - _cameraBoundaryMargin - 1);
+    //        _cameraTargetPosition.y = Mathf.Clamp(_cameraTargetPosition.y, _cameraBoundaryMargin, _height - _cameraBoundaryMargin - 1);
             
-            // Keep the z position unchanged
-            _cameraTargetPosition.z = -10;
-        }
+    //        // Keep the z position unchanged
+    //        _cameraTargetPosition.z = -10;
+    //    }
         
-        // Smoothly move camera to target position
-        _cam.transform.position = Vector3.SmoothDamp(
-            _cam.transform.position, 
-            _cameraTargetPosition, 
-            ref _cameraVelocity, 
-            _cameraSmoothTime
-        );
-    }
+    //    // Smoothly move camera to target position
+    //    _cam.transform.position = Vector3.SmoothDamp(
+    //        _cam.transform.position, 
+    //        _cameraTargetPosition, 
+    //        ref _cameraVelocity, 
+    //        _cameraSmoothTime
+    //    );
+    //}
 
     private void EnsureGameManagerExists()
     {

@@ -24,6 +24,26 @@ public class AIBot : MonoBehaviour
     private bool _useTimeLimit = true;
     private bool _useTranspositionTable = true;
 
+    void Start()
+    {
+        string aiLevel = PlayerPrefs.GetString("AILevel", "Easy");
+        switch (aiLevel)
+        {
+            case "Easy":
+                maxDepth = 2;
+                timeLimit = 1.0f;
+                break;
+            case "Medium":
+                maxDepth = 4;
+                timeLimit = 2.0f;
+                break;
+            case "Hard":
+                maxDepth = 6;
+                timeLimit = 5.0f;
+                break;
+        }
+    }
+
     public void MakeMove(Cell[,] grid)
     {
         // Clear cache for new move

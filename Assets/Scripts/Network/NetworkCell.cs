@@ -128,7 +128,7 @@ public class NetworkCell : MonoBehaviour, IPunObservable
             }
 
             // Call the RPC to set the cell
-            thisPlayer.photonView.RPC("SetCell", RpcTarget.AllBuffered, currentPlayer, true);
+            GetComponent<PhotonView>().RPC("SetCell", RpcTarget.AllBuffered, currentPlayer, true);
 
             //// Ensure the symbol is visible and properly configured
             //if (_symbol != null)
@@ -212,6 +212,5 @@ public class NetworkCell : MonoBehaviour, IPunObservable
                 Debug.LogError("TextMeshPro component not assigned on Cell!");
             }
         }
-        throw new System.NotImplementedException();
     }
 }

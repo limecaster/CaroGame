@@ -27,7 +27,10 @@ public class RoomManager : PhotonSingleton<RoomManager>
     public void SinglePlayer()
     {
         PhotonNetwork.OfflineMode = true;
-        CreateRoom();
+        // Get scene name "SampleScene" then load it
+        // SinglePlayer don't need network
+        PhotonNetwork.LoadLevel("SampleScene");
+
     }
 
     public void CreateRoom()
